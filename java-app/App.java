@@ -1,22 +1,34 @@
 import java.sql.*;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Scanner;
 
 public class App {
 
+  //Constantes de configuración
+  private static final String postgresDriver = "org.postgresql.Driver";
+  private static final String EXIT = "4";
+  private static final String START = "";
+  private static final List<String> tiposHab = List.of("simple","doble","triple","cuadruple");
+  private static Scanner sc = new Scanner(System.in);
 
+  /**
+   * Función principal de la aplicación.
+   *  Se encarga de inicializar la conexión con la base de datos, y de llamar a la función del menú.
+   * @param args Argumentos de la línea de comandos.
+   */
   public static void main(String[] args) {
 
     try {
-      String driver = "org.postgresql.Driver";
 
-      Scanner sc = new Scanner(System.in);
+      //Carga del driver de PostgreSQL si no está cargado.
+      Class.forName(postgresDriver);
 
-      // Load database driver if not already loaded.
-      Class.forName(driver);
 
-      String opcion = "";
-      while (!opcion.equals("4")) {
+      String opcion = START;
+
+      //Mostrar menú y leer opción
+      while (!opcion.equals(EXIT)) {
         
         imprimirMenu();
         opcion = sc.next();
@@ -35,7 +47,7 @@ public class App {
             listarRegistroDeClientes();
             break;
 
-          case "4":
+          case EXIT:
             System.out.println("Muchas gracias. Hasta pronto!\n");
             break;
 
@@ -66,6 +78,10 @@ public class App {
 
   }
 
+  /**
+   * Función que imprime el menú de la aplicación.
+   * Su retorno es vacio.
+   */
   public static void imprimirMenu(){
     System.out.println("===============================");
     System.out.println("HOTELERIA");
@@ -80,15 +96,14 @@ public class App {
 
   public static void insertarHabitacion() throws SQLException{
     Connection connection = Conexion.getInstance();
-
     connection.setAutoCommit(false);
 
-    Scanner sc = new Scanner(System.in);
+
 
     String query = "INSERT INTO hotel.habitaciones (nro ,cant_camas ,codigo_tipo_hab) values(?,?,?)";
 
     int nro;
-    String cant_camas = "";
+    String cant_camas;
     int codigo_tipo_hab;
 
     // Pide numero de habitacion
@@ -99,17 +114,16 @@ public class App {
     do {
       System.out.print("\nIngresar cantidad de camas de acuerdo a las siguientes opciones ('simple', 'doble', 'triple', 'cuadruple'): ");
       cant_camas = sc.next();
-    } while (!cant_camas.equals("simple") && !cant_camas.equals("doble") && !cant_camas.equals("triple") && !cant_camas.equals("cuadruple"));
+    } while (!tiposHab.contains(cant_camas));
 
     // Pide tipo de habitacion desplegando un menu de opciones
-    String opcion = "";
+    int opcion = 0;
     do {
       System.out.print("\nIngresar el codigo de tipo habitacion de acuerdo a las siguientes opciones (1- Basica, 2- Intermedia, 3-Premium): ");
-      opcion = sc.next();
-    } while (!opcion.equals("1") && !opcion.equals("2") && !opcion.equals("3"));
+      opcion = sc.nextInt();
+    } while (opcion < 1 || opcion > 3);
 
-    codigo_tipo_hab = Integer.parseInt(opcion);
-
+    codigo_tipo_hab = opcion;
     PreparedStatement statement = connection.prepareStatement(query);
     statement.setInt(1,nro);
     statement.setString(2,cant_camas);
@@ -118,28 +132,27 @@ public class App {
 
     connection.commit();
 
-    System.out.println("\nHabitacion insertada con exito.");
+    System.out.println("\nHabitacion insertada con éxito.");
 
   }
 
   public static void registrarCliente() throws SQLException{
     Connection connection = Conexion.getInstance();
+    connection.setAutoCommit(false);
 
-    Scanner sc = new Scanner(System.in);
-    
     String dni;
-
     Date date = Date.valueOf(LocalDate.now());
     
     System.out.print("Ingresa el DNI del cliente (Ej: 42.638.323): ");
     dni = sc.nextLine();
+
 
     // Buscar la persona
     String query = "SELECT * FROM hotel.personas WHERE dni=?;";
     PreparedStatement statement = connection.prepareStatement(query);
     statement.setString(1, dni);
     ResultSet resultSet = statement.executeQuery();
-    connection.setAutoCommit(false);
+
 
     // Si la persona no existe, inserto una persona
     if(!resultSet.next()){
