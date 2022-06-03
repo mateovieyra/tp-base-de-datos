@@ -5,12 +5,13 @@ import java.util.Scanner;
 
 public class App {
 
-  //Constantes de configuración
+  //region Constantes de configuración
   private static final String postgresDriver = "org.postgresql.Driver";
   private static final String EXIT = "4";
   private static final String START = "";
   private static final List<String> tiposHab = List.of("simple","doble","triple","cuadruple");
   private static Scanner sc = new Scanner(System.in);
+  //endregion
 
   /**
    * Función principal de la aplicación.
@@ -94,7 +95,12 @@ public class App {
     System.out.print("Seleccionar opcion (1 a 4): ");
   }
 
-  public static void insertarHabitacion() throws SQLException{
+  /**
+   * Función que inserta una nueva habitación en la base de datos.
+   * Su retorno es vacio.
+   * @throws SQLException
+   */
+  private static void insertarHabitacion() throws SQLException{
     Connection connection = Conexion.getInstance();
     connection.setAutoCommit(false);
 
@@ -136,7 +142,11 @@ public class App {
 
   }
 
-  public static void registrarCliente() throws SQLException{
+  /**
+   * Funcion que registra un cliente en una habitación en la fecha de hoy.
+   * @throws SQLException
+   */
+  private static void registrarCliente() throws SQLException{
     Connection connection = Conexion.getInstance();
     connection.setAutoCommit(false);
 
@@ -176,7 +186,7 @@ public class App {
       statement.executeUpdate();
     }
     
-    // Buscar cliente. 
+    // Buscar cliente.
     query = "SELECT * FROM hotel.clientes WHERE dni=?;";
     statement = connection.prepareStatement(query);
     statement.setString(1, dni);
@@ -219,7 +229,11 @@ public class App {
       System.out.println("\nRegistro exitoso.");
   }
 
-  public static void listarRegistroDeClientes() throws SQLException{
+  /**
+   * Funcion que lista los clientes registrados en el hotel.
+   * @throws SQLException
+   */
+  private static void listarRegistroDeClientes() throws SQLException{
     Connection connection = Conexion.getInstance();
 
     String query = "SELECT dni, nyap, fecha FROM hotel.registros as r JOIN hotel.personas as p ON(r.dni_cliente = p.dni) ORDER BY nyap;";
